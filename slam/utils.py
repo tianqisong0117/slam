@@ -29,8 +29,7 @@ def dotprod(vec1, vec2):
     :param vec2:
     :return:
     """
-    return np.dot(vec1, vec2) / \
-        (np.sqrt(np.dot(vec1, vec1) * np.dot(vec2, vec2)))
+    return np.dot(vec1, vec2) / (np.sqrt(np.dot(vec1, vec1) * np.dot(vec2, vec2)))
 
 
 def compare_analytic_estimated_directions(analytic_directions,
@@ -119,13 +118,10 @@ def get_rotate_matrix(rot_axis, angle):
 def project_vector2tangent_plane(v_n, v_p):
     """
     calculate the projection vector of v_p onto tangent plane of v_n
-
     :param v_n: array of (3,)  float
         normal vector of v
-
     :param v_p: array of (n, 3) float
         vector projected
-
     :return: v_t (n, 3) float
         projection result
     """
@@ -150,16 +146,12 @@ def project_vector2vector(v_n, v_p):
     """
     calculate the projection vector of v_p onto v_n,
     v_pn = (v_p dot v_n) / |v_n| * unite vector of (v_n)
-
     :param v_n: array of (3,)  float
         direction vector
-
     :param v_p: array of (n, 3) float
         vectors projected
-
     :return: (n, 3) float
         projection result
-
     """
 
     if np.linalg.norm(v_n) == 0:
@@ -174,4 +166,3 @@ def project_vector2vector(v_n, v_p):
     v_pn = coeff * unitev_n
 
     return v_pn
-

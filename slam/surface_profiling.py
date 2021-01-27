@@ -1,21 +1,19 @@
-
 import numpy as np
 from scipy.spatial.distance import cdist
-import slam.geodesics
-import slam.utils as utils
 import trimesh
 import trimesh.intersections
 import trimesh.triangles
+
+import slam.geodesics
+import slam.utils as utils
 
 
 def cortical_surface_profiling(mesh, rot_angle, r_step, max_samples):
     """
     Surface profiling for a given cortical surface.
-
     NOTE:
     This function returns 2D profiling coordinates directly instead of 3D.
     These 2D points are used to generate the feature Maps.
-
     :param mesh: trimesh object
         The cortical surface mesh.
     :param rot_angle: float
@@ -24,11 +22,9 @@ def cortical_surface_profiling(mesh, rot_angle, r_step, max_samples):
         Length of sampling steps.
     :param max_samples:
         Maximum of samples in one profiles.
-
     :return: (N_vertex, N_p, N_s) float
         Profiles points in their 2D coordinates.
         (x, y) respectively
-
     """
 
     vert = mesh.vertices
@@ -88,16 +84,13 @@ def surface_profiling_vert(
         r_step,
         max_samples,
         mesh):
-
     """
     Implement the profile sampling process for a given vertex.
-
     NOTE:
     For a given vertex,
         Number of profiles N_p = 360/theta
     For each profiles,
         Number of Sampling points N_s = max_samples
-
     :param vertex: (3,) float
         Target vertex (center vertex)
     :param vert_norm: (3,) float
@@ -112,7 +105,6 @@ def surface_profiling_vert(
         Maximum of samples in one profiles
     :param mesh: trimesh object
         Intersecting mesh
-
     :return: (N_p, N_s, 3) float
         Profiles points in 3D coordinates.
     """
@@ -125,7 +117,6 @@ def surface_profiling_vert(
     round_angle = 360
 
     for i in range(int(round_angle / rot_angle)):
-
         # set the rotation directions
         rot_angle_alpha = (i * rot_angle) * 1.0 / 360 * 2 * np.pi
         rot_mat_alpha = utils.get_rotate_matrix(
@@ -160,12 +151,12 @@ def second_round_profiling_vert(
         max_samples,
         mesh,
         mesh_face_index):
-
     """
-    Implement the profile sampling process to get the feature values of each profiling points.
+    Implement the profile sampling process to get the feature values of each
+    profiling points.
     The function name comes from the description of the method in the article。
-    Different from the surface_profiling_vert, the mesh_face_index is obligatory.
-
+    Different from the surface_profiling_vert, the mesh_face_index is
+    obligatory.
     :param vertex: (3,) float
         Target vertex (center vertex)
     :param vert_norm: (3,) float
@@ -183,17 +174,17 @@ def second_round_profiling_vert(
     :param mesh_face_index:
         Indices of polygons of mesh.
         Use to record which polygon the sampling points belongs to.
-
     :return:
         profile_points: (N_p, N_s, 3, 3) float
             For each profile points contain [p1, p2, sample_points],
             where p1, p2 are the points used to calculate the sampling points.
         profile_intersect_faces: ((N_p, N_s,) int
-
     """
 
-    profile_points = []  # record all the profiling points and interpolation points
-    profile_intersect_faces = []  # record all the faces id that contain the sample points
+    profile_points = []  # record all the profiling points and interpolation
+    # points
+    profile_intersect_faces = []  # record all the faces id that contain the
+    # sample points
     vertex = np.array(vertex)
 
     # project the dir_R0 onto the tangent plane
@@ -223,7 +214,8 @@ def second_round_profiling_vert(
         orient_face_id = intersect_fm_index[ori_lines_id]
 
         # Calculate the samples of profiles
-        points_interp_profile, cor_faces_index = compute_profiles_sampling_points(
+        points_interp_profile, cor_faces_index = \
+            compute_profiles_sampling_points(
             orient_points_i, vertex, max_samples, r_step, orient_face_id)
 
         profile_points.append(points_interp_profile)
@@ -232,12 +224,11 @@ def second_round_profiling_vert(
     return np.array(profile_points), np.array(profile_intersect_faces)
 
 
-def compute_profiles_sampling_points(points_intersect, origin, max_samples, r_step, face_id=None):
+def compute_profiles_sampling_points(points_intersect, origin, max_samples,
+                                     r_step, face_id=None):
     """
     Calculate the sampling points on each profiles.
-
     :param points_intersect: (n, 3) float
-
     :param origin: (3,) float
         origin vertex
     :param max_samples: int
@@ -247,17 +238,16 @@ def compute_profiles_sampling_points(points_intersect, origin, max_samples, r_st
     :param face_id: (n,) int
         Indices of polygons which intersecting points belong to.
         Default is None, it is only used in the second round profiling.
-
     :return:
         When face_id is None, return
             sampling points on profiles: (n, 3) float
         Otherwise,
             points_interpolate_profile: (n, 3, 3) float
                 contains [p1, p2, sample_points]
-                where p1, p2 are the points used to calculate the sampling points.
+                where p1, p2 are the points used to calculate the sampling
+                points.
             cor_faces_index: (n,)
                 the corresponding faces of profile points
-
     """
 
     if len(points_intersect) == 0:
@@ -334,10 +324,8 @@ def compute_profiles_sampling_points(points_intersect, origin, max_samples, r_st
 def vert2poly_indices(vertex_array, poly_array):
     """
     Find vertex-polygon indices from the polygons array of vertices
-
     TODO There is a func in the lastest trimesh:
         trimesh.geometry.vertex_face_indices()
-
     :param vertex_array:
     :param poly_array:
     :return:
@@ -355,30 +343,25 @@ def select_points_orientation(intersect_points, r_alpha, origin, norm):
     """
     Select points in a specified orientation,
     and ordered them by distance from the center.
-
     :param intersect_points: (n, 2, 3) float
         Points of intersecting lines.
-
     :param r_alpha: (3,) float
         Orientation vector
-
     :param origin: (3,) float
         Origin point
-
     :param norm: (3,) float
         Normal of origin point
-
     :return: orient_points,    (n, 3) float
              orient_p_indices, (n,) int
              lines_indices,    (n,) int
-
         Ordered points in the orientation.
     """
 
     points_i = intersect_points.reshape(intersect_points.size // 3, 3)
 
     # find the center points
-    p_idx, count_coord = np.unique(np.where(points_i == origin)[0], return_counts=True)
+    p_idx, count_coord = np.unique(np.where(points_i == origin)[0],
+                                   return_counts=True)
     origin_index = p_idx[np.where(count_coord == 3)[0]]
 
     if len(origin_index) == 0:
@@ -415,11 +398,10 @@ def radial_sort(points,
     NOTE:
     This function is derived from the
         trimesh.points.radial_sort(points_i, origin, norm)
-    I overwrite this function to return both the coordinates and indices of the points.
-
+    I overwrite this function to return both the coordinates and indices of
+    the points.
     Sorts a set of points radially (by angle) around an
     an axis specified by origin and normal vector.
-
     Parameters
     --------------
     points : (n, 3) float
@@ -428,7 +410,6 @@ def radial_sort(points,
       Origin to sort around
     normal : (3,)  float
       Vector to sort around
-
     Returns
     --------------
     ordered : (n, 3) float
@@ -452,21 +433,18 @@ def radial_sort(points,
 
 def compute_profile_coord_x_y(profile, origin, normal):
     """
-    Calculate the 2D coordinates of the profiling points in their rotation planes
-    These points are used to generate the feature maps mentioned in the articles.
-
+    Calculate the 2D coordinates of the profiling points in their rotation
+    planes
+    These points are used to generate the feature maps mentioned in the
+    articles.
     :param profile: (N_p, N_s, 3) float
         Sampling points of profiles in 3D
-
     :param origin: (3,) float
         Center vertex of profiles
-
     :param normal: (3,) float
         Normal of origin
-
     :return: (N_p, N_s) float
         The coordinate x, y
-
     """
     num_prof = len(profile)
     num_sample = len(profile[0])
@@ -492,10 +470,11 @@ def compute_profile_coord_x_y(profile, origin, normal):
     return x, y
 
 
-def get_texture_value_on_profile(texture, mesh, profiling_samples, profiling_samples_fid):
+def get_texture_value_on_profile(texture, mesh, profiling_samples,
+                                 profiling_samples_fid):
     """
-    Calculate the texture values of each points on profiles by barycentric interpolation
-
+    Calculate the texture values of each points on profiles by barycentric
+    interpolation
     :param texture: slam texture
     :param mesh: trimesh object
     :param profiling_samples: (N, N_p, N_s, 3, 3) float
@@ -506,18 +485,21 @@ def get_texture_value_on_profile(texture, mesh, profiling_samples, profiling_sam
         3 = (3,) float
     :param profiling_samples_fid: (N, N_p, N_s) int
         Faces id corresponding to the profile sampling points.
-
     :return:
         texture_profile: (N, N_p, N_s) float
-
     """
 
-    # compute the barycentric parameters of each profile point to its co-faces of mesh
-    barycentric_coord = compute_profile_barycentric_para(profiling_samples, mesh, profiling_samples_fid)
+    # compute the barycentric parameters of each profile point to its
+    # co-faces of mesh
+    barycentric_coord = compute_profile_barycentric_para(profiling_samples,
+                                                         mesh,
+                                                         profiling_samples_fid)
 
     # compute the features of each profile
     tex_arr = texture.darray[0]
-    texture_profile = compute_profile_texture_barycentric(tex_arr, mesh, profiling_samples_fid, barycentric_coord)
+    texture_profile = compute_profile_texture_barycentric(tex_arr, mesh,
+                                                          profiling_samples_fid,
+                                                          barycentric_coord)
 
     return texture_profile
 
@@ -525,7 +507,6 @@ def get_texture_value_on_profile(texture, mesh, profiling_samples, profiling_sam
 def compute_profile_barycentric_para(profile_sample_points, mesh, triangle_id):
     """
     Compute the barycentric parameters of each points on profiles
-
     :param profile_sample_points: (N, N_p, N_s, 3, 3) float
         N = Number of center vertices for surface profiling.
         N_p = Number of profiles for each center.
@@ -533,14 +514,11 @@ def compute_profile_barycentric_para(profile_sample_points, mesh, triangle_id):
         3 = [p1, p2, sampling points]
         3 = (3,) float
     :param mesh: trimesh object
-
     :param triangle_id: (N, N_p, N_s) int
         Faces id corresponding to the profile sampling points.
-
     :return:
         barycentric: (N, N_p, N_s, 3) float
         Barycentric coordinates for all profiles points
-
     """
 
     if len(profile_sample_points.shape) != 5:
@@ -552,30 +530,32 @@ def compute_profile_barycentric_para(profile_sample_points, mesh, triangle_id):
 
     # get the sample points on profile
     sample_points_profile = profile_sample_points[:, :, :, 2]
-    sample_points = sample_points_profile.reshape(sample_points_profile.size//3, 3)
+    sample_points = sample_points_profile.reshape(
+        sample_points_profile.size // 3, 3)
 
     # get the faces
     triangle_id = triangle_id.reshape(triangle_id.size)
     triangles_v = vert[poly[triangle_id]]
 
-    barycentric = trimesh.triangles.points_to_barycentric(triangles_v, sample_points)
-    barycentric = barycentric.reshape(len(sample_points_profile), len(sample_points_profile[0]), len(sample_points_profile[0][0]), 3)
+    barycentric = trimesh.triangles.points_to_barycentric(triangles_v,
+                                                          sample_points)
+    barycentric = barycentric.reshape(len(sample_points_profile),
+                                      len(sample_points_profile[0]),
+                                      len(sample_points_profile[0][0]), 3)
 
     return barycentric
 
 
-def compute_profile_texture_barycentric(texture, mesh, triangle_id, barycentric_coord):
+def compute_profile_texture_barycentric(texture, mesh, triangle_id,
+                                        barycentric_coord):
     """
     Compute the texture values of each points on profiles
-
     :param texture: darray of slam texture
     :param mesh: trimesh object
-
     :param triangle_id: (N, N_p, N_s) int
         Faces id corresponding to the profile sampling points.
     :param barycentric_coord: (N, N_p, N_s, 3) float
          Barycentric coordinates for all profiles points
-
     :return:
     """
 
